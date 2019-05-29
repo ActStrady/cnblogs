@@ -63,6 +63,23 @@ class NewsSpider(Spider):
             # 关掉过滤
             yield Request(next_url, dont_filter=True)
 
+    # TODO 爬取所有文章内容和评论
+    def news_text_parse(self, response):
+        news_item = NewsDetailsItem()
+        comment_item = NewsCommentItem()
+        news = response.xpath("//div[@id='news_body']/p/text()").extract()
+        for line in news:
+            news_item['line'] = line.strip('\u3000')
+            yield news_item
+
+        names = response.xpath("//a[@class='comment-author']/text()").extract()
+        comments = response.xpath("//div[@class='comment_main']/text()[last()]").extract()
+        # 评论数据
+        for i in range(len(comments)):
+            comment_item['name'] = names[i]
+            comment_item['comment'] = comments[i]
+            yield comment_item
+
 
 class NewsDetailsSpider(Spider):
     name = 'news_details'
